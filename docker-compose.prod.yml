@@ -1,0 +1,12 @@
+# Vue 3 — Production (build + Nginx). Port 8001.
+# Jalankan: docker compose -f docker-compose.prod.yml up -d
+name: emm-sandbox-front-prod
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: emm_sandbox_front_prod
+    ports:
+      - "8001:80"
