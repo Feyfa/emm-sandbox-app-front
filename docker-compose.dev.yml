@@ -1,16 +1,16 @@
 # Vue 3 — Development (Vite dev server, hot reload). Tanpa Nginx.
 # Jalankan: docker compose -f docker-compose.dev.yml up
-name: emm-sandbox-front-dev
+name: emm_sandbox_app_front
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: emm_sandbox_front_dev
+    container_name: emm_sandbox_app_front
     working_dir: /app
     volumes:
       - .:/app
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
     ports:
       - "8001:8001"
