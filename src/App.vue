@@ -1,42 +1,54 @@
 <template>
-  <div v-if="isLoading">Loading...</div>
-
-  <div v-else-if="isAuthenticated && user">
-    <p>Logged in as {{ user.email }}</p>
-
-    <h1>User Profile</h1>
-
-    <pre>{{ JSON.stringify(user, null, 2) }}</pre>
-
-    <button @click="logout">Logout</button>
-  </div>
-
-  <div v-else>
-    <p v-if="error">Error: {{ error.message }}</p>
-
-    <button @click="signup">Signup</button>
-
-    <button @click="login">Login</button>
-  </div>
+  <main class="landing">
+    <section class="card">
+      <h1>Welcome to EMM Sandbox</h1>
+      <p>
+        Vue 3 frontend is running. This is a simple landing page without Auth0
+        integration.
+      </p>
+    </section>
+  </main>
 </template>
 
-<script setup lang="ts">
-import { useAuth0 } from '@auth0/auth0-vue'
+<style scoped>
+:global(html),
+:global(body),
+:global(#app) {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 
-const {
-  isLoading,
-  isAuthenticated,
-  error,
-  loginWithRedirect,
-  logout: auth0Logout,
-  user
-} = useAuth0()
+.landing {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+}
 
-const signup = () =>
-  loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } })
+.card {
+  width: min(680px, 100%);
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
 
-const login = () => loginWithRedirect()
+h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: #0f172a;
+}
 
-const logout = () =>
-  auth0Logout({ logoutParams: { returnTo: window.location.origin } })
-</script>
+p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+</style>
