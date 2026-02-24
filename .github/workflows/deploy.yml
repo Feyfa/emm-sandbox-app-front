@@ -1,0 +1,49 @@
+name: Deploy Vue to VM
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 🔐 Setup SSH key
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/proxmox_vm102
+          chmod 600 ~/.ssh/proxmox_vm102
+          ssh-keyscan -H 100.100.98.98 >> ~/.ssh/known_hosts
+
+      # 🐳 Build Docker image
+      - name: Build Docker image
+        run: docker build -t vue-app -f Dockerfile.prod .
+
+      # 📦 Save image ke file
+      - name: Save image
+        run: docker save vue-app | gzip > vue-app.tar.gz
+
+      # 🚚 Transfer ke VM (via Tailscale)
+      - name: Copy image to server
+        run: scp vue-app.tar.gz vm102@100.100.98.98:/home/vm102/
+
+      # 🚀 Deploy di VM
+      - name: Deploy on VM
+        run: |
+          ssh vm102@100.100.98.98 << 'EOF'
+          docker stop vue_app || true
+          docker rm vue_app || true
+
+          docker load < vue-app.tar.gz
+          docker run -d \
+            --name vue_app \
+            -p 8001:80 \
+            vue-app
+
+          rm vue-app.tar.gz
+          EOF
