@@ -5,20 +5,20 @@ on:
     branches: ["main"]
 
 jobs:
- deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ✅ WAJIB — Masuk ke jaringan Tailscale
+      # 🔐 Connect ke jaringan Tailscale
       - name: Connect Tailscale
         uses: tailscale/github-action@v2
         with:
           authkey: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
-      # 🔑 Setup SSH key
+      # 🔑 Setup SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -26,15 +26,15 @@ jobs:
           chmod 600 ~/.ssh/proxmox_vm102
           ssh-keyscan -H 100.100.98.98 >> ~/.ssh/known_hosts
 
-      # 🐳 Build image
+      # 🏗️ Build image
       - name: Build Docker image
-        run: docker build -t vue-app -f Dockerfile.prod .
+        run: docker build -t emm-sandbox-front-prod-app -f Dockerfile.prod .
 
-      # 📦 Save image ke file
+      # 📦 Save image
       - name: Save image
-        run: docker save vue-app | gzip > vue-app.tar.gz
+        run: docker save emm-sandbox-front-prod-app | gzip > vue-app.tar.gz
 
-      # 🚚 Kirim ke VM
+      # 🚚 Copy ke VM
       - name: Copy image to server
         run: scp -i ~/.ssh/proxmox_vm102 vue-app.tar.gz vm102@100.100.98.98:/home/vm102/
 
@@ -42,15 +42,16 @@ jobs:
       - name: Deploy on VM
         run: |
           ssh -i ~/.ssh/proxmox_vm102 vm102@100.100.98.98 << 'EOF'
-          docker stop vue_app || true
-          docker rm vue_app || true
+
+          docker stop emm_sandbox_front_prod || true
+          docker rm emm_sandbox_front_prod || true
 
           docker load < vue-app.tar.gz
 
           docker run -d \
-            --name vue_app \
+            --name emm_sandbox_front_prod \
             -p 8001:80 \
-            vue-app
+            emm-sandbox-front-prod-app
 
           rm vue-app.tar.gz
           EOF
