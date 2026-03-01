@@ -1,26 +1,74 @@
-<script setup>
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/vue'
+<template>
+    <div class="app-layout" :class="{ 'app-layout--no-sidebar': !showSidebar }">
+        <AppSidebar v-if="showSidebar" />
+        <main class="app-content">
+            <RouterView />
+        </main>
+    </div>
+</template>
+
+<script>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuth } from '@clerk/vue'
+import AppSidebar from './components/AppSidebar.vue'
+import { useAuthStore } from './stores/auth'
+
+export default {
+    name: 'App',
+    components: { AppSidebar },
+
+    setup() {
+        const { isLoaded, isSignedIn, getToken } = useAuth()
+        const route = useRoute()
+        const showSidebar = computed(() => route.meta?.requiresAuth === true)
+
+        return { isLoaded, isSignedIn, getToken, showSidebar }
+    },
+
+    watch: {
+        isLoaded(val) {
+            if (val) {
+                const authStore = useAuthStore()
+                authStore.setClerkLoaded(true)
+                authStore.setGetToken(this.getToken)
+            }
+        },
+
+        isSignedIn: {
+            immediate: true,
+            async handler(val) {
+                const authStore = useAuthStore()
+                if (val) {
+                    await authStore.syncWithLaravel(this.getToken)
+                } else {
+                    authStore.clearUser()
+                }
+            },
+        },
+    },
+}
 </script>
 
-<template>
-    <main class="landing">
-        <section class="card">
-            <h1 style="text-align: center;">Welcome to EMM Sandbox</h1>
+<style>
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-            <SignedOut>
-                <div style="display:flex; gap:12px; justify-content:center; margin-top:16px;">
-                    <SignInButton mode="modal">
-                        <button>Sign in</button>
-                    </SignInButton>
-                </div>
-            </SignedOut>
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
 
-            <SignedIn>
-                <div style="display:flex; gap:12px; justify-content:center; align-items:center; margin-top:16px;">
-                    <span>You are signed in</span>
-                    <UserButton />
-                </div>
-            </SignedIn>
-        </section>
-    </main>
-</template>
+.app-layout--no-sidebar {
+    display: block;
+}
+
+.app-content {
+    flex: 1;
+    background-color: #f9f9f9;
+    overflow-y: auto;
+}
+</style>
