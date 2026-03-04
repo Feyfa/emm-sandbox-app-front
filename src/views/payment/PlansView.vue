@@ -62,6 +62,7 @@
                         :data-whop-checkout-session="checkoutSessionId"
                         :data-whop-checkout-return-url="returnUrl"
                         data-whop-checkout-environment="sandbox"
+                        data-whop-checkout-theme="light"
                     ></div>
 
                     <div v-if="loadingCheckout" class="loading-text">Preparing checkout...</div>
@@ -197,7 +198,8 @@ export default {
 <style scoped>
 .content-inner {
     padding: 48px 40px;
-    max-width: 900px;
+    max-width: 960px;
+    margin: 0 auto;
 }
 
 .page-header {
@@ -248,9 +250,10 @@ export default {
 /* ── Plans Grid ── */
 .plans-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-bottom: 32px;
+    align-items: stretch;
 }
 
 .plan-card {
@@ -261,6 +264,8 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .plan-card--featured {
